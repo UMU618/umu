@@ -8,6 +8,27 @@
 
 namespace umu {
 namespace string {
+
+#pragma region "IsNullOrEmpty"
+template <typename CharType>
+[[nodiscard]] inline bool IsNullOrEmpty(
+    _In_opt_z_ const CharType* psz) {
+  if (nullptr == psz) {
+    return true;
+  }
+
+  if (CharType(0) == *psz) {
+    return true;
+  }
+
+  return false;
+}
+
+[[nodiscard]] inline bool IsNullOrEmpty(std::nullptr_t) {
+  return true;
+}
+#pragma endregion
+
 #pragma region "Join"
 template <size_t N>
 #if _HAS_CXX20
@@ -15,17 +36,6 @@ constexpr
 #endif
     std::string
     ArrayJoin(const std::array<std::string_view, N>& array) {
-  auto buffer = std::string("{").append(array.at(0));
-  for (size_t i = 1; i < N; ++i) {
-    buffer.append(", ").append(array.at(i));
-  }
-  return buffer.append("}");
-}
-#pragma endregion
-
-#pragma region "Join"
-template <size_t N>
-constexpr std::string ArrayJoin(const std::array<std::string_view, N>& array) {
   auto buffer = std::string("{").append(array.at(0));
   for (size_t i = 1; i < N; ++i) {
     buffer.append(", ").append(array.at(i));
