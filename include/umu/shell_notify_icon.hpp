@@ -1,6 +1,8 @@
 // Implementation of the CNotifyIconData class and the CTrayIconImpl template.
 #pragma once
 
+#include <atltypes.h>
+
 namespace umu {
 // Wrapper class for the Win32 NOTIFYICONDATA structure
 class NotifyIconData : public NOTIFYICONDATA {

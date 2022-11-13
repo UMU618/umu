@@ -1,18 +1,18 @@
 ﻿#pragma once
 
 #include <algorithm>
+#include <cstdint>
 #include <string>
 #include <vector>
 
-#include <stdint.h>
+#include "umu.h"
 
 namespace umu {
 namespace string {
 
 #pragma region "IsNullOrEmpty"
 template <typename CharType>
-[[nodiscard]] inline bool IsNullOrEmpty(
-    _In_opt_z_ const CharType* psz) {
+[[nodiscard]] inline bool IsNullOrEmpty(_In_opt_z_ const CharType* psz) {
   if (nullptr == psz) {
     return true;
   }
@@ -30,17 +30,30 @@ template <typename CharType>
 #pragma endregion
 
 #pragma region "Join"
-template <size_t N>
-#if _HAS_CXX20
-constexpr
-#endif
-    std::string
-    ArrayJoin(const std::array<std::string_view, N>& array) {
-  auto buffer = std::string("{").append(array.at(0));
-  for (size_t i = 1; i < N; ++i) {
-    buffer.append(", ").append(array.at(i));
+template <typename CharType>
+struct JoinTokens {
+  std::basic_string<CharType> head{'{', '\0'};
+  std::basic_string<CharType> separator{',', ' ', '\0'};
+  std::basic_string<CharType> tail{'}', '\0'};
+};
+
+template <typename CharType, size_t N>
+CONSTEXPR std::basic_string<CharType> ArrayJoin(
+    const std::array<std::basic_string_view<CharType>, N>& array,
+    const JoinTokens<CharType>& s = {}) {
+  static_assert(0 < N);
+  size_t length = s.head.size() + s.separator.size() + s.tail.size();
+  for (const auto& e : array) {
+    length += e.size();
   }
-  return buffer.append("}");
+  std::basic_string<CharType> buffer;
+  buffer.reserve(length);
+  buffer = s.head;
+  buffer.append(array.at(0));
+  for (size_t i = 1; i < N; ++i) {
+    buffer.append(s.separator).append(array.at(i));
+  }
+  return buffer.append(s.tail);
 }
 #pragma endregion
 
