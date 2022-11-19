@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atlbase.h>
+
 namespace umu {
 class Module {
  public:
