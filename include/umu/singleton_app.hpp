@@ -15,6 +15,32 @@ class SingletonApp {
       return false;
     }
     app_name_ = std::move(app_name);
+    return Reinitialize();
+  }
+
+  bool CheckWindowProp(HWND hwnd) {
+    HANDLE handle = ::GetProp(hwnd, app_name_.data());
+    if (nullptr != handle && handle == hwnd) {
+      return true;
+    }
+    return false;
+  }
+
+  bool EnableSingleton(HWND hwnd, bool enable = true) noexcept {
+    return !!::SetProp(hwnd, app_name_.data(), enable ? hwnd : nullptr);
+  }
+
+  void Uninitialize() noexcept {
+    mutex_.Close();
+  }
+
+  HWND FindPrevInstanceWindow() noexcept {
+    ::EnumWindows(EnumWindowsProc, (LPARAM)this);
+    return prev_;
+  }
+
+  bool Reinitialize() noexcept {
+    assert(!app_name_.empty());
     HANDLE h = CreateMutex(nullptr, TRUE, app_name_.data());
     if (nullptr == h) {
       return false;
@@ -26,21 +52,8 @@ class SingletonApp {
     return true;
   }
 
-  bool CheckWindowProp(HWND hwnd) {
-    HANDLE handle = ::GetProp(hwnd, app_name_.data());
-    if (nullptr != handle && handle == hwnd) {
-      return true;
-    }
-    return false;
-  }
-
-  HWND FindPrevInstanceWindow() noexcept {
-    ::EnumWindows(EnumWindowsProc, (LPARAM)this);
-    return prev_;
-  }
-
-  bool SetSingleton(HWND hwnd) noexcept {
-    return !!::SetProp(hwnd, app_name_.data(), hwnd);
+  void RemoveSingleton(HWND hwnd) noexcept {
+    ::RemoveProp(hwnd, app_name_.data());
   }
 
  private:
