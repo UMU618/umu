@@ -7,7 +7,7 @@ namespace umu {
 // Wrapper class for the Win32 NOTIFYICONDATA structure
 class NotifyIconData : public NOTIFYICONDATA {
  public:
-  NotifyIconData() {
+  NotifyIconData() noexcept {
     ZeroMemory(this, sizeof(NOTIFYICONDATA));
     cbSize = sizeof(NOTIFYICONDATA);
   }
@@ -18,7 +18,7 @@ class NotifyIconData : public NOTIFYICONDATA {
 template <class T>
 class ShellNotifyIconImpl {
  public:
-  ShellNotifyIconImpl() : added_(false), menu_default_item_(0) {
+  ShellNotifyIconImpl() noexcept {
     WM_TASKBAR_CREATED_ = RegisterWindowMessage(_T("TaskbarCreated"));
   }
 
@@ -32,7 +32,7 @@ class ShellNotifyIconImpl {
   //  hIcon       - The icon to display
   //  nID         - The resource ID of the context menu
   // returns true on success
-  bool AddNotifyIcon(LPCTSTR lpszToolTip, HICON hIcon, UINT nID) {
+  bool AddNotifyIcon(LPCTSTR lpszToolTip, HICON hIcon, UINT nID) noexcept {
     T* pT = static_cast<T*>(this);
     // Fill in the data
     notify_icon_data_.hWnd = *pT;
@@ -47,7 +47,7 @@ class ShellNotifyIconImpl {
     return added_;
   }
 
-  bool ModifyNotifyIcon(HICON hIcon) {
+  bool ModifyNotifyIcon(HICON hIcon) noexcept {
     // Fill in the data
     notify_icon_data_.hIcon = hIcon;
     notify_icon_data_.uFlags = NIF_ICON;
@@ -58,7 +58,7 @@ class ShellNotifyIconImpl {
 
   // Delete taskbar icon
   // returns true on success
-  bool DeleteNotifyIcon() {
+  bool DeleteNotifyIcon() noexcept {
     if (!added_)
       return false;
     // Remove
@@ -72,7 +72,7 @@ class ShellNotifyIconImpl {
 
   // Set the icon tooltip text
   // returns true on success
-  bool SetTooltipText(LPCTSTR pszTooltipText) {
+  bool SetTooltipText(LPCTSTR pszTooltipText) noexcept {
     if (pszTooltipText == NULL)
       return FALSE;
     // Fill the structure
@@ -85,7 +85,7 @@ class ShellNotifyIconImpl {
 
   bool SetBalloonTooltipText(LPCTSTR info_text,
                              LPCTSTR info_title = NULL,
-                             UINT timeout = 1000) {
+                             UINT timeout = 1000) noexcept {
     if (NULL == info_text) {
       return false;
     }
@@ -104,27 +104,30 @@ class ShellNotifyIconImpl {
   }
 
   // Set the default menu item ID
-  inline void SetDefaultItem(UINT nID) { menu_default_item_ = nID; }
+  inline void SetDefaultItem(UINT id) noexcept { menu_default_item_ = id; }
 
   BEGIN_MSG_MAP(ShellNotifyIconImpl)
-    MESSAGE_HANDLER(WM_SHELL_NOTIFY_ICON, OnShellNotifyIcon)
-    MESSAGE_HANDLER(WM_TASKBAR_CREATED_, OnTaskbarCreated)
+  MESSAGE_HANDLER(WM_SHELL_NOTIFY_ICON, OnShellNotifyIcon)
+  MESSAGE_HANDLER(WM_TASKBAR_CREATED_, OnTaskbarCreated)
   END_MSG_MAP()
 
   LRESULT OnShellNotifyIcon(UINT /*uMsg*/,
                             WPARAM wParam,
                             LPARAM lParam,
-                            BOOL& /*bHandled*/) {
+                            BOOL& /*bHandled*/) noexcept {
     // Is this the ID we want?
-    if (wParam != notify_icon_data_.uID)
+    if (wParam != notify_icon_data_.uID) {
       return 0;
+    }
+
     T* pT = static_cast<T*>(this);
     // Was the right-button clicked?
     if (LOWORD(lParam) == WM_RBUTTONUP) {
-      // Load the menu
+      // Load the menu, DestroyMenu at scope exit
       CMenu menu;
-      if (!menu.LoadMenu(notify_icon_data_.uID))
+      if (!menu.LoadMenu(notify_icon_data_.uID)) {
         return 0;
+      }
       // Get the sub-menu
       CMenuHandle popup_menu(menu.GetSubMenu(0));
       // Prepare
@@ -146,15 +149,14 @@ class ShellNotifyIconImpl {
       pT->PostMessage(WM_COMMAND, cmd, reinterpret_cast<LPARAM>(pT->m_hWnd));
       // BUGFIX: See "PRB: Menus for Notification Icons Don't Work Correctly"
       // pT->PostMessage(WM_NULL);
-      // Done
-      menu.DestroyMenu();
     } else if (LOWORD(lParam) == WM_LBUTTONDBLCLK) {
       // Make app the foreground
       SetForegroundWindow(*pT);
-      // Load the menu
+      // Load the menu, DestroyMenu at scope exit
       CMenu menu;
-      if (!menu.LoadMenu(notify_icon_data_.uID))
+      if (!menu.LoadMenu(notify_icon_data_.uID)) {
         return 0;
+      }
       // Get the sub-menu
       CMenuHandle popup_menu(menu.GetSubMenu(0));
       // Get the item
@@ -166,8 +168,6 @@ class ShellNotifyIconImpl {
         // Send
         pT->SendMessage(WM_COMMAND, item, 0);
       }
-      // Done
-      menu.DestroyMenu();
     }
 
     return 0;
@@ -176,7 +176,7 @@ class ShellNotifyIconImpl {
   LRESULT OnTaskbarCreated(UINT /*uMsg*/,
                            WPARAM /*wParam*/,
                            LPARAM /*lParam*/,
-                           BOOL& /*bHandled*/) {
+                           BOOL& /*bHandled*/) noexcept {
     DeleteNotifyIcon();
     notify_icon_data_.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
     added_ = Shell_NotifyIcon(NIM_ADD, &notify_icon_data_) ? true : false;
@@ -184,7 +184,7 @@ class ShellNotifyIconImpl {
   }
 
   // Allow the menu items to be enabled/checked/etc.
-  virtual void PrepareMenu(HMENU /*hMenu*/) {
+  virtual void PrepareMenu(HMENU /*hMenu*/) noexcept {
     // Stub
   }
 
@@ -192,8 +192,8 @@ class ShellNotifyIconImpl {
   static const UINT WM_SHELL_NOTIFY_ICON = (WM_USER + 100);
 
   NotifyIconData notify_icon_data_;
-  bool added_;
-  UINT menu_default_item_;
+  bool added_{false};
+  UINT menu_default_item_{0};
   UINT WM_TASKBAR_CREATED_;
 };
 
