@@ -2,7 +2,7 @@
 
 A Windows C++ Source Library by UMU618 (稣)
 
-Another cross-platform C++ library: [DRY](https://github.com/UMU618/dry)
+It is recommended to use another cross-platform C++ library: [DRY](https://github.com/RegameDesk/dry)
 
 ## License
 
