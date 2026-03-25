@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <ShellAPI.h>
 
@@ -45,6 +45,9 @@ inline DWORD ExecuteWait(LPCTSTR file,
   sei.lpDirectory = working_directory;
   sei.nShow = show;
   if (::ShellExecuteEx(&sei)) {
+    if (!sei.hProcess) {
+      return ERROR_ABANDONED_WAIT_0;
+    }
     ::WaitForSingleObject(sei.hProcess, INFINITE);
     if (nullptr != exit_code) {
       ::GetExitCodeProcess(sei.hProcess, exit_code);
