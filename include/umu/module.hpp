@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <atlbase.h>
 
@@ -22,8 +22,8 @@ class Module {
     if (nullptr == module_) {
       return GetLastError();
     }
-    ATLTRACE2(atlTraceUtil, 0, "GetModuleHandle(%s) = %p\n", (LPCSTR)CT2A(name),
-              module_);
+    ATLTRACE2(ATL::atlTraceUtil, 0, "GetModuleHandle(%s) = %p\n",
+              (LPCSTR)ATL::CT2A(name), module_);
     return NO_ERROR;
   }
 
@@ -36,11 +36,11 @@ class Module {
         return GetLastError();
       }
       load_ = true;
-      ATLTRACE2(atlTraceUtil, 0, "LoadLibrary(%s) = %p\n", (LPCSTR)CT2A(name),
-                module_);
+      ATLTRACE2(ATL::atlTraceUtil, 0, "LoadLibrary(%s) = %p\n",
+                (LPCSTR)ATL::CT2A(name), module_);
     } else {
-      ATLTRACE2(atlTraceUtil, 0, "GetModuleHandle(%s) = %p\n",
-                (LPCSTR)CT2A(name), module_);
+      ATLTRACE2(ATL::atlTraceUtil, 0, "GetModuleHandle(%s) = %p\n",
+                (LPCSTR)ATL::CT2A(name), module_);
     }
     return NO_ERROR;
   }
@@ -52,8 +52,8 @@ class Module {
       return GetLastError();
     }
     load_ = true;
-    ATLTRACE2(atlTraceUtil, 0, "LoadLibrary(%s) = %p\n", (LPCSTR)CT2A(name),
-              module_);
+    ATLTRACE2(ATL::atlTraceUtil, 0, "LoadLibrary(%s) = %p\n",
+              (LPCSTR)ATL::CT2A(name), module_);
     return NO_ERROR;
   }
 
@@ -62,7 +62,7 @@ class Module {
       if (load_) {
         FreeLibrary(module_);
         load_ = false;
-        ATLTRACE2(atlTraceUtil, 0, "FreeLibrary(%p)\n", module_);
+        ATLTRACE2(ATL::atlTraceUtil, 0, "FreeLibrary(%p)\n", module_);
       }
       module_ = nullptr;
     }
