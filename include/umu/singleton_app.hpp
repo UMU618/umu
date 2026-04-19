@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <cassert>
 
@@ -8,6 +8,23 @@ namespace umu {
 class SingletonApp {
  public:
   SingletonApp() = default;
+
+  bool Check(tstring app_name) noexcept {
+    assert(!app_name.empty());
+    if (app_name.empty()) {
+      return false;
+    }
+    app_name_ = std::move(app_name);
+
+    HANDLE h = ::OpenMutex(SYNCHRONIZE, FALSE, app_name_.data());
+    if (!h) {
+      [[maybe_unused]] DWORD e = ::GetLastError();
+      assert(ERROR_FILE_NOT_FOUND == e);
+      return false;
+    }
+    ::CloseHandle(h);
+    return true;
+  }
 
   bool Initialize(tstring app_name) noexcept {
     assert(!app_name.empty());
@@ -30,9 +47,7 @@ class SingletonApp {
     return !!::SetProp(hwnd, app_name_.data(), enable ? hwnd : nullptr);
   }
 
-  void Uninitialize() noexcept {
-    mutex_.Close();
-  }
+  void Uninitialize() noexcept { mutex_.Close(); }
 
   HWND FindPrevInstanceWindow() noexcept {
     ::EnumWindows(EnumWindowsProc, (LPARAM)this);
@@ -41,12 +56,12 @@ class SingletonApp {
 
   bool Reinitialize() noexcept {
     assert(!app_name_.empty());
-    HANDLE h = CreateMutex(nullptr, TRUE, app_name_.data());
-    if (nullptr == h) {
+    HANDLE h = ::CreateMutex(nullptr, TRUE, app_name_.data());
+    if (!h) {
       return false;
     }
     mutex_.Attach(h);
-    if (ERROR_ALREADY_EXISTS == GetLastError()) {
+    if (ERROR_ALREADY_EXISTS == ::GetLastError()) {
       return false;
     }
     return true;
@@ -70,7 +85,7 @@ class SingletonApp {
 
  private:
   tstring app_name_;
-  CHandle mutex_;
+  ATL::CHandle mutex_;
   HWND prev_;
 };
 }  // namespace umu
