@@ -106,3 +106,17 @@ constexpr wchar_t kDateTimeW[]{BUILD_YEAR_CH0,
                                BUILD_SEC_CH0,
                                BUILD_SEC_CH1,
                                '\0'};
+
+constexpr std::uint16_t kBuildYear{
+    (BUILD_YEAR_CH0 - '0') * 1000 + (BUILD_YEAR_CH1 - '0') * 100 +
+    (BUILD_YEAR_CH2 - '0') * 10 + (BUILD_YEAR_CH3 - '0')};
+constexpr std::uint16_t kBuildMonth{(BUILD_MONTH_CH0 - '0') * 10 +
+                                    (BUILD_MONTH_CH1 - '0')};
+constexpr std::uint16_t kBuildDay{(BUILD_DAY_CH0 - '0') * 10 +
+                                  (BUILD_DAY_CH1 - '0')};
+constexpr std::uint16_t kBuildHour{(BUILD_HOUR_CH0 - '0') * 10 +
+                                   (BUILD_HOUR_CH1 - '0')};
+constexpr std::uint16_t kBuildMinute{(BUILD_MIN_CH0 - '0') * 10 +
+                                     (BUILD_MIN_CH1 - '0')};
+constexpr std::uint16_t kBuildSecond{(BUILD_SEC_CH0 - '0') * 10 +
+                                     (BUILD_SEC_CH1 - '0')};
