@@ -62,6 +62,7 @@ class SingletonApp {
     }
     mutex_.Attach(h);
     if (ERROR_ALREADY_EXISTS == ::GetLastError()) {
+      mutex_.Close();
       return false;
     }
     return true;
